@@ -1,122 +1,141 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from 'react';
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+// Definimos la estructura de datos real de tus mesas
+interface Table {
+  id: number;
+  number: number;
+  shape: 'CIRCLE' | 'RECTANGLE'; // La forma física fija de la mesa
+  status: 'EMPTY' | 'CHECKED_OK' | 'WARNING' | 'CRITICAL'; // El estado del servicio
+  timer: string | null; // El tiempo actual corriendo
 }
 
-export default App
+export default function App() {
+  // Datos simulados basados exactamente en las formas y estados de tu diagrama
+  const [tables, setTables] = useState<Table[]>([
+    { id: 1, number: 1, shape: 'RECTANGLE', status: 'EMPTY', timer: null },
+    { id: 2, number: 2, shape: 'RECTANGLE', status: 'EMPTY', timer: null },
+    { id: 3, number: 3, shape: 'RECTANGLE', status: 'EMPTY', timer: null },
+    { id: 4, number: 4, shape: 'CIRCLE', status: 'CHECKED_OK', timer: '0:45' }, // Ocupada y checada (Verde)
+    { id: 5, number: 5, shape: 'CIRCLE', status: 'WARNING', timer: '2:15' },    // Alerta (Amarilla)
+    { id: 6, number: 6, shape: 'CIRCLE', status: 'CRITICAL', timer: '6:32' },   // Crítica (Roja)
+  ]);
+
+  // Función para obtener el color de fondo según el estado de la mesa
+  const getStatusColor = (status: Table['status']) => {
+    switch (status) {
+      case 'EMPTY': return '#ffffff';       // Blanco: No está en uso
+      case 'CHECKED_OK': return '#d1ffd1';  // Verde claro: Ya checada / OK
+      case 'WARNING': return '#fff3b3';     // Amarillo claro: Alerta < 5 min
+      case 'CRITICAL': return '#ffb3b3';    // Rojo claro: Check-Up Urgente > 5 min
+      default: return '#ffffff';
+    }
+  };
+
+  // Función para simular que el mesero hace el Check-Up
+  const handleTableClick = (id: number) => {
+    setTables(tables.map(table => {
+      if (table.id === id) {
+        // Si está vacía, la activamos. Si está en rojo/amarillo, la pasamos a verde (OK)
+        if (table.status === 'EMPTY') {
+          return { ...table, status: 'CHECKED_OK', timer: '0:00' };
+        } else {
+          return { ...table, status: 'CHECKED_OK', timer: '0:00' }; // Reinicia el ciclo
+        }
+      }
+      return table;
+    }));
+  };
+
+  return (
+    <div style={{ padding: '20px', fontFamily: 'sans-serif', backgroundColor: '#bfbfbf', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <header style={{ marginBottom: '40px', padding: '0 20px' }}>
+        <h1 style={{ margin: '0', fontSize: '36px', color: '#000' }}>APin Restaurant Tracker</h1>
+        <p style={{ margin: '5px 0 0 0', fontSize: '18px', color: '#000' }}>Real-Time Control Panel</p>
+      </header>
+
+      {/* Grid organizado por filas tal cual tu diagrama */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(2, 1fr)', 
+        gridTemplateRows: 'repeat(3, 1fr)',
+        gap: '40px 60px', 
+        maxWidth: '800px', 
+        margin: '0 auto',
+        justifyItems: 'center'
+      }}>
+        {/* Fila Superior: Mesas 6 y 3 */}
+        <TableCard table={tables.find(t => t.number === 6)!} getStatusColor={getStatusColor} onClick={handleTableClick} />
+        <TableCard table={tables.find(t => t.number === 3)!} getStatusColor={getStatusColor} onClick={handleTableClick} />
+
+        {/* Fila Central: Mesas 5 y 2 */}
+        <TableCard table={tables.find(t => t.number === 5)!} getStatusColor={getStatusColor} onClick={handleTableClick} />
+        <TableCard table={tables.find(t => t.number === 2)!} getStatusColor={getStatusColor} onClick={handleTableClick} />
+
+        {/* Fila Inferior: Mesas 4 y 1 */}
+        <TableCard table={tables.find(t => t.number === 4)!} getStatusColor={getStatusColor} onClick={handleTableClick} />
+        <TableCard table={tables.find(t => t.number === 1)!} getStatusColor={getStatusColor} onClick={handleTableClick} />
+      </div>
+    </div>
+  );
+}
+
+// Sub-componente para renderizar la mesa manteniendo su forma física fija
+function TableCard({ table, getStatusColor, onClick }: { 
+  table: Table; 
+  getStatusColor: (status: Table['status']) => string;
+  onClick: (id: number) => void; 
+}) {
+  
+  const commonStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: getStatusColor(table.status),
+    border: '2px solid #a6a6a6',
+    cursor: 'pointer',
+    transition: '0.3s ease',
+    userSelect: 'none',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
+  };
+
+  // Renderizado condicional basado estrictamente en la FORMA física de la mesa
+  const renderShape = () => {
+    if (table.shape === 'CIRCLE') {
+      return (
+        <div onClick={() => onClick(table.id)} style={{
+          ...commonStyle,
+          width: '180px',
+          height: '180px',
+          borderRadius: '50%',
+        }}>
+          <span style={{ fontSize: '32px', color: '#000', fontWeight: '500' }}>
+            {table.timer ? table.timer : '--:--'}
+          </span>
+        </div>
+      );
+    } else {
+      return (
+        <div onClick={() => onClick(table.id)} style={{
+          ...commonStyle,
+          width: '260px',
+          height: '160px',
+          borderRadius: '4px' // Rectángulo con esquinas ligeramente suavizadas
+        }}>
+          <span style={{ fontSize: '32px', color: '#000', fontWeight: '500' }}>
+            {table.timer ? table.timer : ''}
+          </span>
+        </div>
+      );
+    }
+  };
+
+  return (
+    <div style={{ textAlign: 'center' }}>
+      {renderShape()}
+      {/* Etiqueta fija abajo de la mesa */}
+      <p style={{ margin: '15px 0 0 0', fontSize: '20px', color: '#000', fontWeight: 'bold' }}>
+        Table {table.number}
+      </p>
+    </div>
+  );
+}
