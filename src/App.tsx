@@ -1,51 +1,58 @@
 import { useState } from 'react';
 
-// Definimos la estructura de datos real de tus mesas
+// Table Interface
 interface Table {
   id: number;
   number: number;
-  shape: 'CIRCLE' | 'RECTANGLE'; // La forma física fija de la mesa
-  status: 'EMPTY' | 'CHECKED_OK' | 'WARNING' | 'CRITICAL'; // El estado del servicio
-  timer: string | null; // El tiempo actual corriendo
+  shape: 'CIRCLE' | 'RECTANGLE';
+  status: 'EMPTY' | 'CHECKED_OK' | 'WARNING' | 'CRITICAL';
+  timer: string | null;
 }
 
 export default function App() {
-  // Datos simulados basados exactamente en las formas y estados de tu diagrama
+  //Init Tables Data
   const [tables, setTables] = useState<Table[]>([
     { id: 1, number: 1, shape: 'RECTANGLE', status: 'EMPTY', timer: null },
     { id: 2, number: 2, shape: 'RECTANGLE', status: 'EMPTY', timer: null },
     { id: 3, number: 3, shape: 'RECTANGLE', status: 'EMPTY', timer: null },
-    { id: 4, number: 4, shape: 'CIRCLE', status: 'CHECKED_OK', timer: '0:45' }, // Ocupada y checada (Verde)
-    { id: 5, number: 5, shape: 'CIRCLE', status: 'WARNING', timer: '2:15' },    // Alerta (Amarilla)
-    { id: 6, number: 6, shape: 'CIRCLE', status: 'CRITICAL', timer: '6:32' },   // Crítica (Roja)
+    { id: 4, number: 4, shape: 'CIRCLE', status: 'CHECKED_OK', timer: '0:45' },
+    { id: 5, number: 5, shape: 'CIRCLE', status: 'WARNING', timer: '2:15' },
+    { id: 6, number: 6, shape: 'CIRCLE', status: 'CRITICAL', timer: '6:32' },
   ]);
 
-  // Función para obtener el color de fondo según el estado de la mesa
+  // Color Switch
   const getStatusColor = (status: Table['status']) => {
     switch (status) {
-      case 'EMPTY': return '#ffffff';       // Blanco: No está en uso
-      case 'CHECKED_OK': return '#d1ffd1';  // Verde claro: Ya checada / OK
-      case 'WARNING': return '#fff3b3';     // Amarillo claro: Alerta < 5 min
-      case 'CRITICAL': return '#ffb3b3';    // Rojo claro: Check-Up Urgente > 5 min
+      case 'EMPTY': return '#ffffff';
+      case 'CHECKED_OK': return '#d1ffd1';
+      case 'WARNING': return '#fff3b3';
+      case 'CRITICAL': return '#ffb3b3';
       default: return '#ffffff';
     }
   };
 
-  // Función para simular que el mesero hace el Check-Up
+  // function Table Click
   const handleTableClick = (id: number) => {
     setTables(tables.map(table => {
       if (table.id === id) {
-        // Si está vacía, la activamos. Si está en rojo/amarillo, la pasamos a verde (OK)
+        // If table.status = EMPTY -> turn WARNING
+        // If table.status = CHECKED_OK -> turn EMPTY
+        // If table.status = else -> turn CHECKED_OK
         if (table.status === 'EMPTY') {
-          return { ...table, status: 'CHECKED_OK', timer: '0:00' };
+          return { ...table, status: 'WARNING', timer: '0:00' };
         } else {
-          return { ...table, status: 'CHECKED_OK', timer: '0:00' }; // Reinicia el ciclo
+          if (table.status === 'CHECKED_OK') {
+            return{ ...table, status: 'EMPTY', timer: ''};
+          } else {
+          return { ...table, status: 'CHECKED_OK', timer: '0:00' };
+          }
         }
       }
       return table;
     }));
   };
 
+  // HTML Insert
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif', backgroundColor: '#bfbfbf', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <header style={{ marginBottom: '40px', padding: '0 20px' }}>
@@ -53,7 +60,7 @@ export default function App() {
         <p style={{ margin: '5px 0 0 0', fontSize: '18px', color: '#000' }}>Real-Time Control Panel</p>
       </header>
 
-      {/* Grid organizado por filas tal cual tu diagrama */}
+      {/* Grid */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(2, 1fr)', 
@@ -79,13 +86,14 @@ export default function App() {
   );
 }
 
-// Sub-componente para renderizar la mesa manteniendo su forma física fija
+// Sub-component TableCard
 function TableCard({ table, getStatusColor, onClick }: { 
   table: Table; 
   getStatusColor: (status: Table['status']) => string;
   onClick: (id: number) => void; 
 }) {
   
+  //commonStyle Modification
   const commonStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
@@ -109,7 +117,7 @@ function TableCard({ table, getStatusColor, onClick }: {
           borderRadius: '50%',
         }}>
           <span style={{ fontSize: '32px', color: '#000', fontWeight: '500' }}>
-            {table.timer ? table.timer : '--:--'}
+            {table.timer ? table.timer : ''}
           </span>
         </div>
       );
